@@ -32,9 +32,10 @@ class ItemProduct extends StatelessWidget {
                 width: double.infinity,
                 height: 150,
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.asset(
-                    "assets/images/product.png",
+                    "assets/images/product1.png",
                     fit: BoxFit.cover,
                   ),
                 ),

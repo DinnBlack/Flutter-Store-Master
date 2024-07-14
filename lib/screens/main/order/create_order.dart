@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:storemaster/screens/main/order/create_order_product.dart';
 import 'package:storemaster/utils/const.dart';
 
-class MainProductsScreen extends StatefulWidget {
-  const MainProductsScreen({super.key});
+class CreateOrder extends StatefulWidget {
+  const CreateOrder({super.key});
 
   @override
-  State<MainProductsScreen> createState() => _MainProductsScreenState();
+  State<CreateOrder> createState() => _CreateOrderState();
 }
 
-class _MainProductsScreenState extends State<MainProductsScreen> {
+class _CreateOrderState extends State<CreateOrder> {
   bool _enabled = true;
   @override
   void initState() {
@@ -147,100 +149,115 @@ class _itemCardProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: 20.sp,
-        vertical: 8.sp,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 72.sp,
-            height: 72.sp,
-            decoration: BoxDecoration(
-              color: AppColors.whiteColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/product1.png',
-                fit: BoxFit.cover,
-                width: 72.sp,
-                height: 72.sp,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageTransition(
+            type: PageTransitionType.bottomToTop,
+            child: const CreateOrderProduct(),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: 20.sp,
+          vertical: 8.sp,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 72.sp,
+              height: 72.sp,
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/product1.png',
+                  fit: BoxFit.cover,
+                  width: 72.sp,
+                  height: 72.sp,
+                ),
               ),
             ),
-          ),
-          SizedBox(
-            width: 12.sp,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container(
-                  height: 36.sp,
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Trà sữa vải thiều Trà sữa vải thiều',
-                    style: TextStyle(
-                      color: AppColors.textColor,
-                      fontSize: 14.sp,
-                      fontFamily: "QuicksandBold",
-                    ),
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Ly',
-                    style: TextStyle(
-                      color: AppColors.textColor,
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '16.000đ',
-                        style: TextStyle(
-                          color: Colors.red[300],
-                          fontSize: 14.sp,
-                          fontFamily: "QuicksandBold",
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 12.sp,
-                    ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '18.000đ',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14.sp,
-                          fontFamily: "QuicksandBold",
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            SizedBox(
+              width: 12.sp,
             ),
-          ),
-          SizedBox(
-            width: 40.sp,
-          ),
-        ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Container(
+                    height: 36.sp,
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Trà sữa vải thiều',
+                      style: TextStyle(
+                        color: AppColors.textColor,
+                        fontSize: 14.sp,
+                        fontFamily: "QuicksandBold",
+                      ),
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Ly',
+                      style: TextStyle(
+                        color: AppColors.textColor,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '16.000đ',
+                          style: TextStyle(
+                            color: Colors.red[300],
+                            fontSize: 14.sp,
+                            fontFamily: "QuicksandBold",
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 12.sp,
+                      ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '18.000đ',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14.sp,
+                            fontFamily: "QuicksandBold",
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: Icon(
+                Icons.add_circle,
+                size: 32.sp,
+                color: Colors.red[300],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

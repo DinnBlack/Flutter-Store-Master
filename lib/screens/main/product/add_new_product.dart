@@ -96,7 +96,7 @@ class _AddNewProductState extends State<AddNewProduct> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          color: AppColors.backGroundButtonColor,
+          color: AppColors.whiteColor,
           child: Column(
             children: [
               SizedBox(
@@ -341,7 +341,7 @@ class _itemCategory extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.sp),
                   )
                 : BoxDecoration(
-                    color: AppColors.whiteColor,
+                    color: AppColors.backGroundButtonColor,
                     borderRadius: BorderRadius.circular(8.sp),
                     border: Border.all(
                       color: Colors.grey,
@@ -474,7 +474,7 @@ class _buttonAddImage extends StatelessWidget {
           width: 1.sp,
           color: Colors.grey,
         ),
-        color: AppColors.whiteColor,
+        color: AppColors.backGroundButtonColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
@@ -585,7 +585,7 @@ class _textFieldAddNewProduct extends StatelessWidget {
           height: 48.sp,
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
-            color: AppColors.whiteColor,
+            color: AppColors.backGroundButtonColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: Colors.grey,
