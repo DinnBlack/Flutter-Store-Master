@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,24 +18,30 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   final TextEditingController _searchController = TextEditingController();
-  // final ref = FirebaseDatabase.instance.ref('count');
+  final ref = FirebaseDatabase.instanceFor(
+          app: Firebase.app(),
+          databaseURL:
+              'https://store-master-dinnblack-default-rtdb.asia-southeast1.firebasedatabase.app')
+      .ref('count');
   String revenue = '';
 
   @override
   void initState() {
     super.initState();
     _searchController.dispose();
-    // _fetchRevenue();
+    print(revenue);
+    _fetchRevenue();
+    print(revenue);
   }
 
-  // void _fetchRevenue() {
-  //   ref.onValue.listen((event) {
-  //     var snapshot = event.snapshot;
-  //     setState(() {
-  //       revenue = snapshot.value.toString();
-  //     });
-  //   });
-  // }
+  void _fetchRevenue() {
+    ref.onValue.listen((DatabaseEvent event) {
+      var snapshot = event.snapshot;
+      setState(() {
+        revenue = snapshot.value.toString();
+      });
+    });
+  }
 
   @override
   void dispose() {

@@ -3,13 +3,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:storemaster/screens/login/start_screen.dart';
 import 'package:storemaster/screens/main/main_screen.dart';
 import 'package:storemaster/utils/const.dart';
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyDARHDIaWGd9hA6m3XY-Eqt1HOdV6dLiX4',
+      appId: '1:126628150865:android:6e594846fe882ca2ccc270',
+      messagingSenderId: '126628150865',
+      projectId: 'store-master-dinnblack',
+      storageBucket: 'store-master-dinnblack.appspot.com',
+    ),
+  );
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarIconBrightness: Brightness.dark,
     statusBarColor: Colors.transparent,
@@ -30,7 +37,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (_, child) {
         return MaterialApp(
-          title: 'Flutter Demo',
+          title: 'Store Master',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             fontFamily: "QuicksandRegular",
