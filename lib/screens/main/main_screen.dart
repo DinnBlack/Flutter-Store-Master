@@ -1,9 +1,10 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:storemaster/screens/main/example/floating.dart';
+import 'package:storemaster/screens/login/login_screen.dart';
 import 'package:storemaster/screens/main/order/create_order.dart';
 import 'package:storemaster/screens/main/pages/community_page_screen.dart';
 import 'package:storemaster/screens/main/pages/home_page_screen.dart';

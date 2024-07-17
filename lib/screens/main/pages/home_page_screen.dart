@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:page_transition/page_transition.dart';
@@ -16,11 +17,24 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   final TextEditingController _searchController = TextEditingController();
+  // final ref = FirebaseDatabase.instance.ref('count');
+  String revenue = '';
+
   @override
   void initState() {
-    _searchController.dispose();
     super.initState();
+    _searchController.dispose();
+    // _fetchRevenue();
   }
+
+  // void _fetchRevenue() {
+  //   ref.onValue.listen((event) {
+  //     var snapshot = event.snapshot;
+  //     setState(() {
+  //       revenue = snapshot.value.toString();
+  //     });
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -36,8 +50,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
           color: AppColors.backGroundButtonColor,
           child: Column(
             children: [
-              //search and revenue
-              const _topBody(),
+              _topBody(revenue: revenue),
               SizedBox(
                 height: 20.sp,
               ),
@@ -210,7 +223,9 @@ class _serviceItems extends StatelessWidget {
 }
 
 class _topBody extends StatelessWidget {
-  const _topBody();
+  final String revenue;
+
+  const _topBody({required this.revenue});
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +248,7 @@ class _topBody extends StatelessWidget {
           SizedBox(
             height: 24.sp,
           ),
-          const _revenueSummary(),
+          _revenueSummary(revenue: revenue),
         ],
       ),
     );
@@ -241,7 +256,8 @@ class _topBody extends StatelessWidget {
 }
 
 class _revenueSummary extends StatelessWidget {
-  const _revenueSummary();
+  final String revenue;
+  const _revenueSummary({required this.revenue});
 
   @override
   Widget build(BuildContext context) {
@@ -284,7 +300,7 @@ class _revenueSummary extends StatelessWidget {
                           height: 8.sp,
                         ),
                         Text(
-                          "1.803.000đ",
+                          revenue,
                           style: TextStyle(
                             color: AppColors.whiteColor,
                             fontSize: 24.sp,

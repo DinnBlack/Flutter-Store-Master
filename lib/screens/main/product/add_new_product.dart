@@ -316,7 +316,7 @@ class _AddNewProductState extends State<AddNewProduct> {
   }
 }
 
-class _itemCategory extends StatelessWidget {
+class _itemCategory extends StatefulWidget {
   final String title;
   final bool isSelected;
   final VoidCallback? onDelete;
@@ -328,55 +328,77 @@ class _itemCategory extends StatelessWidget {
   });
 
   @override
+  _itemCategoryState createState() => _itemCategoryState();
+}
+
+class _itemCategoryState extends State<_itemCategory> {
+  bool _isSelected = false; // Local state to manage isSelected
+
+  @override
+  void initState() {
+    super.initState();
+    _isSelected =
+        widget.isSelected; // Initialize local state with widget's isSelected
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(left: 12),
       child: Stack(
         children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8.sp),
-                  )
-                : BoxDecoration(
-                    color: AppColors.backGroundButtonColor,
-                    borderRadius: BorderRadius.circular(8.sp),
-                    border: Border.all(
-                      color: Colors.grey,
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isSelected = !_isSelected; // Toggle isSelected state
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
+              decoration: _isSelected
+                  ? BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(8.sp),
+                    )
+                  : BoxDecoration(
+                      color: AppColors.backGroundButtonColor,
+                      borderRadius: BorderRadius.circular(8.sp),
+                      border: Border.all(
+                        color: Colors.grey[300]!,
+                      ),
+                    ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.title,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: _isSelected
+                          ? AppColors.whiteColor
+                          : AppColors.textColor,
                     ),
                   ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color:
-                        isSelected ? AppColors.whiteColor : AppColors.textColor,
-                  ),
-                ),
-                if (isSelected)
-                  Padding(
-                    padding: EdgeInsets.only(left: 12.sp),
-                    child: GestureDetector(
-                      onTap: onDelete,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: AppColors.whiteColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.red,
-                          size: 14.sp,
+                  if (_isSelected)
+                    Padding(
+                      padding: EdgeInsets.only(left: 12.sp),
+                      child: GestureDetector(
+                        onTap: widget.onDelete, // Trigger onDelete callback
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.whiteColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 14.sp,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -400,8 +422,8 @@ class MyBottomNavigationBar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 6,
-            blurRadius: 16,
+            spreadRadius: 4,
+            blurRadius: 2,
             offset: const Offset(0, 2),
           ),
         ],
@@ -472,7 +494,7 @@ class _buttonAddImage extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.sp,
-          color: Colors.grey,
+          color: Colors.grey[300]!,
         ),
         color: AppColors.backGroundButtonColor,
         borderRadius: BorderRadius.circular(12),
@@ -588,7 +610,7 @@ class _textFieldAddNewProduct extends StatelessWidget {
             color: AppColors.backGroundButtonColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.grey,
+              color: Colors.grey[300]!,
               width: 1.sp,
             ),
           ),

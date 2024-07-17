@@ -263,7 +263,7 @@ class _itemCardProduct extends StatelessWidget {
   }
 }
 
-class _itemCategory extends StatelessWidget {
+class _itemCategory extends StatefulWidget {
   final String title;
   final bool isSelected;
   final VoidCallback? onDelete;
@@ -275,34 +275,59 @@ class _itemCategory extends StatelessWidget {
   });
 
   @override
+  _itemCategoryState createState() => _itemCategoryState();
+}
+
+class _itemCategoryState extends State<_itemCategory> {
+  bool _isSelected = false; // Local state to manage isSelected
+
+  @override
+  void initState() {
+    super.initState();
+    _isSelected =
+        widget.isSelected; // Initialize local state with widget's isSelected
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(left: 12.sp),
-      child: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8.sp),
-                  )
-                : BoxDecoration(
-                    color: AppColors.backGroundButtonColor,
-                    borderRadius: BorderRadius.circular(8.sp),
-                    border: Border.all(
-                      color: Colors.grey,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isSelected = !_isSelected; // Toggle isSelected state
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.only(left: 12.sp),
+        child: Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
+              decoration: _isSelected
+                  ? BoxDecoration(
+                      color: AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(8.sp),
+                      border: Border.all(
+                        color: AppColors.primaryColor,
+                      ),
+                    )
+                  : BoxDecoration(
+                      color: AppColors.backGroundButtonColor,
+                      borderRadius: BorderRadius.circular(8.sp),
+                      border: Border.all(
+                        color: Colors.grey[300]!,
+                      ),
                     ),
-                  ),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: isSelected ? AppColors.whiteColor : AppColors.textColor,
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color:
+                      _isSelected ? AppColors.whiteColor : AppColors.textColor,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
