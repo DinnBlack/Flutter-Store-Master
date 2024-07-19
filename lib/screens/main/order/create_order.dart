@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:storemaster/models/product.dart';
 import 'package:storemaster/screens/main/order/create_order_product.dart';
+import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
+import 'package:storemaster/widgets/items/item_list_products_create_order.dart';
 
 class CreateOrder extends StatefulWidget {
   const CreateOrder({super.key});
@@ -17,7 +20,7 @@ class _CreateOrderState extends State<CreateOrder> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _enabled = false;
       });
@@ -117,10 +120,27 @@ class _CreateOrderState extends State<CreateOrder> {
             enabled: _enabled,
             ignoreContainers: true,
             justifyMultiLineText: true,
-            child: ListView.builder(
-              itemCount: 12,
-              itemBuilder: (context, index) {
-                return _itemCardProduct();
+            child: FutureBuilder<List<Product>>(
+              future: StoreService().fetchProducts(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No products found'));
+                } else {
+                  final products = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      return ItemListProductsCreateOrder(
+                        product: product,
+                      );
+                    },
+                  );
+                }
               },
             ),
           ),
@@ -142,127 +162,6 @@ class _CreateOrderState extends State<CreateOrder> {
   }
 }
 
-class _itemCardProduct extends StatelessWidget {
-  const _itemCardProduct({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          PageTransition(
-            type: PageTransitionType.bottomToTop,
-            child: const CreateOrderProduct(),
-          ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: 20.sp,
-          vertical: 8.sp,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 72.sp,
-              height: 72.sp,
-              decoration: BoxDecoration(
-                color: AppColors.whiteColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/images/product1.png',
-                  fit: BoxFit.cover,
-                  width: 72.sp,
-                  height: 72.sp,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 12.sp,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Container(
-                    height: 36.sp,
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      'Trà sữa vải thiều',
-                      style: TextStyle(
-                        color: AppColors.textColor,
-                        fontSize: 14.sp,
-                        fontFamily: "QuicksandBold",
-                      ),
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Ly',
-                      style: TextStyle(
-                        color: AppColors.textColor,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '16.000đ',
-                          style: TextStyle(
-                            color: Colors.red[300],
-                            fontSize: 14.sp,
-                            fontFamily: "QuicksandBold",
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 12.sp,
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '18.000đ',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14.sp,
-                            fontFamily: "QuicksandBold",
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Center(
-              child: Icon(
-                Icons.add_circle,
-                size: 32.sp,
-                color: Colors.red[300],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _itemCategory extends StatefulWidget {
   final String title;
   final bool isSelected;
@@ -279,13 +178,12 @@ class _itemCategory extends StatefulWidget {
 }
 
 class _itemCategoryState extends State<_itemCategory> {
-  bool _isSelected = false; // Local state to manage isSelected
+  bool _isSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _isSelected =
-        widget.isSelected; // Initialize local state with widget's isSelected
+    _isSelected = widget.isSelected;
   }
 
   @override
@@ -293,7 +191,7 @@ class _itemCategoryState extends State<_itemCategory> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _isSelected = !_isSelected; // Toggle isSelected state
+          _isSelected = !_isSelected;
         });
       },
       child: Container(

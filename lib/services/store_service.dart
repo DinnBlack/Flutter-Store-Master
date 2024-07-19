@@ -101,44 +101,47 @@ class StoreService {
 
   // Fetch Store Details
   Future<List<Product>> fetchProducts() async {
-  try {
-    final DatabaseEvent event = await usersRef.child(uid).child('userStores').once();
-    final DataSnapshot snapshot = event.snapshot;
+    try {
+      final DatabaseEvent event =
+          await usersRef.child(uid).child('userStores').once();
+      final DataSnapshot snapshot = event.snapshot;
 
-    if (snapshot.value != null) {
-      final Map<dynamic, dynamic> userStoresRaw = snapshot.value as Map<dynamic, dynamic>;
-      final Map<String, dynamic> userStores = userStoresRaw.map((key, value) =>
-          MapEntry(key.toString(), value as Map<dynamic, dynamic>));
+      if (snapshot.value != null) {
+        final Map<dynamic, dynamic> userStoresRaw =
+            snapshot.value as Map<dynamic, dynamic>;
+        final Map<String, dynamic> userStores = userStoresRaw.map(
+            (key, value) =>
+                MapEntry(key.toString(), value as Map<dynamic, dynamic>));
 
-      if (userStores.isNotEmpty) {
-        final firstStoreKey = userStores.keys.first;
-        final firstStore = userStores[firstStoreKey] as Map<dynamic, dynamic>;
+        if (userStores.isNotEmpty) {
+          final firstStoreKey = userStores.keys.first;
+          final firstStore = userStores[firstStoreKey] as Map<dynamic, dynamic>;
 
-        if (firstStore.containsKey('products') && firstStore['products'] != null) {
-          final productsMap = firstStore['products'] as Map<dynamic, dynamic>;
-          if (productsMap.isNotEmpty) {
-            return productsMap.entries.map((entry) {
-              final productMap = Map<String, dynamic>.from(entry.value);
-              return Product.fromMap(productMap);
-            }).toList();
+          if (firstStore.containsKey('products') &&
+              firstStore['products'] != null) {
+            final productsMap = firstStore['products'] as Map<dynamic, dynamic>;
+            if (productsMap.isNotEmpty) {
+              return productsMap.entries.map((entry) {
+                final productMap = Map<String, dynamic>.from(entry.value);
+                return Product.fromMap(productMap);
+              }).toList();
+            } else {
+              print('Products list is empty');
+            }
           } else {
-            print('Products list is empty');
+            print('Products is missing or null');
           }
         } else {
-          print('Products is missing or null');
+          print('User Stores is empty');
         }
       } else {
-        print('User Stores is empty');
+        print('Snapshot value is null');
       }
-    } else {
-      print('Snapshot value is null');
+    } catch (e) {
+      print('Error fetching products: $e');
     }
-  } catch (e) {
-    print('Error fetching products: $e');
+    return [];
   }
-  return [];
-}
-
 
   // Function to add a product to the store
   Future<void> addProductToStore(Product product) async {

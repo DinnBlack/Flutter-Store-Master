@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:storemaster/models/product.dart';
 import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
 
 class ItemListProducts extends StatelessWidget {
-  final String imageUrls;
-  final String name;
-  final String unitOfMeasure;
-  final int price;
-  final int promotionalPrice;
+  final Product product;
   const ItemListProducts({
     super.key,
-    required this.imageUrls,
-    required this.name,
-    required this.unitOfMeasure,
-    required this.price,
-    required this.promotionalPrice,
+    required this.product,
   });
 
   @override
@@ -37,7 +30,9 @@ class ItemListProducts extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                imageUrls,
+                product.getImageUrls != null && product.getImageUrls!.isNotEmpty
+                    ? product.getImageUrls!.first
+                    : "assets/images/product2.png",
                 fit: BoxFit.cover,
                 width: 72.sp,
                 height: 72.sp,
@@ -56,7 +51,7 @@ class ItemListProducts extends StatelessWidget {
                   height: 36.sp,
                   alignment: Alignment.topLeft,
                   child: Text(
-                    name,
+                    product.getName,
                     style: TextStyle(
                       color: AppColors.textColor,
                       fontSize: 14.sp,
@@ -70,7 +65,7 @@ class ItemListProducts extends StatelessWidget {
                 Container(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    unitOfMeasure,
+                    product.getUnitOfMeasure ?? "",
                     style: TextStyle(
                       color: AppColors.textColor,
                       fontSize: 12.sp,
@@ -82,7 +77,8 @@ class ItemListProducts extends StatelessWidget {
                     Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        StoreService().formatCurrency(price),
+                        StoreService().formatCurrency(
+                            product.getPromotionalPrice ?? product.getPrice),
                         style: TextStyle(
                           color: Colors.red[300],
                           fontSize: 14.sp,
@@ -96,7 +92,7 @@ class ItemListProducts extends StatelessWidget {
                     Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        StoreService().formatCurrency(promotionalPrice),
+                        StoreService().formatCurrency(product.getPrice),
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 14.sp,

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:storemaster/screens/main/main_screen.dart';
+import 'package:storemaster/screens/splash/splash_screen.dart';
 import 'package:storemaster/services/user_service.dart';
 import 'package:storemaster/utils/const.dart';
 import 'package:storemaster/widgets/customs/cusstom_textfield.dart';
@@ -50,16 +51,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             _textFieldCustom(
               controller: controller,
-              icon: Icons.email_outlined,
-              text: "Tên đăng nhập",
-            ),
-            SizedBox(
-              height: 12.sp,
-            ),
-            _textFieldCustom(
-              controller: controller,
-              icon: Icons.visibility_outlined,
-              text: "Mật khẩu",
+              icon: Icons.phone_outlined,
+              text: "Số điện thoại",
             ),
             SizedBox(
               height: 20.sp,
@@ -172,7 +165,7 @@ class _buttonCustom extends StatelessWidget {
         minimumSize: Size(double.infinity, 48.sp),
       ),
       child: Text(
-        'Đăng nhập',
+        'Xác thực số điện thoại',
         style: TextStyle(
           fontSize: 16.sp,
           fontWeight: FontWeight.w500,
@@ -201,9 +194,11 @@ class _buttonGoogleCustom extends StatelessWidget {
         Navigator.push(
           context,
           PageTransition(
-            type: PageTransitionType.rightToLeft,
-            child: const MainScreen(),
-          ),
+              type: PageTransitionType.fade,
+              child: const SplashScreen(
+                splash: 'assets/lottie/Animation - 1721316132550.json',
+                nextScreen: MainScreen(),
+              )),
         );
       },
       style: OutlinedButton.styleFrom(

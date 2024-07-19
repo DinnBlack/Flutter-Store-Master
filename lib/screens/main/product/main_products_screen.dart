@@ -134,14 +134,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
                     itemBuilder: (context, index) {
                       final product = products[index];
                       return ItemListProducts(
-                        name: product.getName,
-                        imageUrls: product.getImageUrls != null &&
-                                product.getImageUrls!.isNotEmpty
-                            ? product.getImageUrls!.first
-                            : "assets/images/product2.png",
-                        price: product.getPrice,
-                        promotionalPrice: product.getPromotionalPrice ?? 0,
-                        unitOfMeasure: product.unitOfMeasure ?? "",
+                        product: product,
                       );
                     },
                   );

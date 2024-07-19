@@ -2,11 +2,14 @@ import 'package:enefty_icons/enefty_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:storemaster/models/product.dart';
+import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
 import 'package:toastification/toastification.dart';
 
 class CreateOrderProduct extends StatefulWidget {
-  const CreateOrderProduct({super.key});
+  final Product? product;
+  const CreateOrderProduct({super.key, required this.product});
 
   @override
   State<CreateOrderProduct> createState() => _CreateOrderProductState();
@@ -63,9 +66,9 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                         opacity: top <= 110 ? 1 : 0,
                         child: Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.only(top: 48.sp),
+                          padding: EdgeInsets.only(top: 20.sp),
                           child: Text(
-                            'Trà sữa vải thiều',
+                            widget.product!.getName,
                             style: TextStyle(
                               color: AppColors.textColor,
                               fontSize: 16.sp,
@@ -74,8 +77,11 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                           ),
                         ),
                       ),
-                      background: Image.asset(
-                        'assets/images/product2.png',
+                      background: Image.network(
+                        widget.product!.getImageUrls != null &&
+                                widget.product!.getImageUrls!.isNotEmpty
+                            ? widget.product!.getImageUrls!.first
+                            : "assets/images/product2.png",
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -108,7 +114,7 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                   Container(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      'Trà sữa vải thiều',
+                                      widget.product!.getName,
                                       style: TextStyle(
                                         color: AppColors.textColor,
                                         fontSize: 16.sp,
@@ -125,7 +131,10 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                       Container(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          '16.000đ',
+                                          StoreService().formatCurrency(widget
+                                                  .product!
+                                                  .getPromotionalPrice ??
+                                              widget.product!.getPrice),
                                           style: TextStyle(
                                             color: Colors.red[300],
                                             fontSize: 16.sp,
@@ -139,7 +148,8 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                       Container(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          '18.000đ',
+                                          StoreService().formatCurrency(
+                                              widget.product!.getPrice),
                                           style: TextStyle(
                                             color: Colors.grey,
                                             fontSize: 14.sp,
@@ -165,7 +175,7 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                 child: Container(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    "Trên con đường đời, chúng ta luôn phải đối mặt với những thử thách và khó khăn. Tuy nhiên, điều quan trọng là chúng ta không bao giờ đơn độc trên con đường đó. Bạn luôn có thể tìm thấy sự giúp đỡ và hỗ trợ từ những người xung quanh.",
+                                    widget.product!.getDescription ?? '',
                                     maxLines: maxLines,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
