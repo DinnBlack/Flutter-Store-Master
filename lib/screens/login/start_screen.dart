@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:storemaster/screens/login/login_screen.dart';
 import 'package:storemaster/screens/login/sign_up_screen.dart';
@@ -33,22 +34,27 @@ class _StartScreenState extends State<StartScreen> {
                     Image.asset(
                       "assets/images/logo.png",
                       fit: BoxFit.fill,
-                      width: 100,
-                      height: 100,
+                      width: 100.sp,
+                      height: 100.sp,
                     ),
-                    const SizedBox(
-                      height: 20,
+                    SizedBox(
+                      height: 20.sp,
                     ),
                     Text(
                       "StoreMaster",
-                      style: AppTextStyle.quicksandBold(36),
+                      style: TextStyle(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Container(
-                      width: 300,
+                      width: 300.sp,
                       alignment: Alignment.center,
                       child: Text(
                         "Môt công cụ quản lý cửa hàng dành cho bạn",
-                        style: AppTextStyle.quicksandRegular(18),
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     )
@@ -57,12 +63,12 @@ class _StartScreenState extends State<StartScreen> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.sp,
               ),
               child: Column(
                 children: [
-                  CustomAppButton(
+                  ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -72,11 +78,24 @@ class _StartScreenState extends State<StartScreen> {
                         ),
                       );
                     },
-                    text: 'Bắt đầu',
-                    backgroundColor: AppColors.primaryColor,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.sp),
+                      ),
+                      minimumSize: Size(double.infinity, 48.sp),
+                    ),
+                    child: Text(
+                      'Bắt đầu',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  const SizedBox(
-                    height: 20,
+                  SizedBox(
+                    height: 20.sp,
                   ),
                   GestureDetector(
                     onTap: () {
@@ -93,15 +112,17 @@ class _StartScreenState extends State<StartScreen> {
                       children: [
                         Text(
                           "Bạn đã có tài khoản",
-                          style: AppTextStyle.quicksandRegular(18),
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                          ),
                         ),
-                        const SizedBox(
-                          width: 20,
+                        SizedBox(
+                          width: 20.sp,
                         ),
                         InkWell(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16.sp),
                           child: Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: EdgeInsets.all(4.sp),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               color: AppColors.primaryColor,
@@ -115,8 +136,8 @@ class _StartScreenState extends State<StartScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 32,
+                  SizedBox(
+                    height: 20.sp,
                   ),
                 ],
               ),

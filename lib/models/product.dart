@@ -3,13 +3,13 @@ import 'package:storemaster/models/accompanying_Item.dart';
 class Product {
   final String id;
   final String name;
-  final double price;
-  final double? costPrice;
-  final double? promotionalPrice;
+  final int price;
+  final int? costPrice;
+  final int? promotionalPrice;
   final String? unitOfMeasure;
   final String? category;
   final String? description;
-  final String? imageUrl;
+  final List<String>? imageUrls;
   final List<AccompanyingItem>? accompanyingItems;
 
   Product({
@@ -21,7 +21,7 @@ class Product {
     this.unitOfMeasure,
     this.category,
     this.description,
-    this.imageUrl,
+    this.imageUrls,
     this.accompanyingItems,
   });
 
@@ -35,13 +35,13 @@ class Product {
       'unitOfMeasure': unitOfMeasure,
       'category': category,
       'description': description,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'accompanyingItems':
           accompanyingItems?.map((item) => item.toJson()).toList(),
     };
   }
 
-  factory Product.fromJson(Map<String, dynamic> json) {
+  factory Product.fromMap(Map<String, dynamic> json) {
     return Product(
       id: json['id'],
       name: json['name'],
@@ -51,7 +51,9 @@ class Product {
       unitOfMeasure: json['unitOfMeasure'],
       category: json['category'],
       description: json['description'],
-      imageUrl: json['imageUrl'],
+      imageUrls: json['imageUrls'] != null
+          ? List<String>.from(json['imageUrls'])
+          : null,
       accompanyingItems: json['accompanyingItems'] != null
           ? (json['accompanyingItems'] as List)
               .map((item) => AccompanyingItem.fromJson(item))
@@ -60,27 +62,29 @@ class Product {
     );
   }
 
-    // Getters
+  // Getters
   String get getId => id;
   String get getName => name;
-  double get getPrice => price;
-  double? get getCostPrice => costPrice;
-  double? get getPromotionalPrice => promotionalPrice;
+  int get getPrice => price;
+  int? get getCostPrice => costPrice;
+  int? get getPromotionalPrice => promotionalPrice;
   String? get getUnitOfMeasure => unitOfMeasure;
   String? get getCategory => category;
   String? get getDescription => description;
-  String? get getImageUrl => imageUrl;
+  List<String>? get getImageUrls => imageUrls;
   List<AccompanyingItem>? get getAccompanyingItems => accompanyingItems;
 
   // Setters
   void setId(String id) => id = id;
   void setName(String name) => name = name;
-  void setPrice(double price) => price = price;
-  void setCostPrice(double? costPrice) => costPrice = costPrice;
-  void setPromotionalPrice(double? promotionalPrice) => promotionalPrice = promotionalPrice;
+  void setPrice(int price) => price = price;
+  void setCostPrice(int? costPrice) => costPrice = costPrice;
+  void setPromotionalPrice(int? promotionalPrice) =>
+      promotionalPrice = promotionalPrice;
   void setUnitOfMeasure(String? unitOfMeasure) => unitOfMeasure = unitOfMeasure;
   void setCategory(String? category) => category = category;
   void setDescription(String? description) => description = description;
-  void setImageUrl(String? imageUrl) => imageUrl = imageUrl;
-  void setAccompanyingItems(List<AccompanyingItem>? accompanyingItems) => accompanyingItems = accompanyingItems;
+  void setImageUrls(List<String>? imageUrls) => imageUrls = imageUrls;
+  void setAccompanyingItems(List<AccompanyingItem>? accompanyingItems) =>
+      accompanyingItems = accompanyingItems;
 }

@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:storemaster/models/product.dart';
+import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
+import 'package:toastification/toastification.dart';
 
 class AddNewProduct extends StatefulWidget {
   const AddNewProduct({super.key});
@@ -11,6 +17,82 @@ class AddNewProduct extends StatefulWidget {
 }
 
 class _AddNewProductState extends State<AddNewProduct> {
+  final TextEditingController _productNameController = TextEditingController();
+  final TextEditingController _sellingPriceController = TextEditingController();
+  final TextEditingController _costPriceController = TextEditingController();
+  final TextEditingController _promotionalPriceController =
+      TextEditingController();
+  final TextEditingController _unitOfMeasureController =
+      TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final List<File> _selectedImages = [];
+  final ImagePicker _picker = ImagePicker();
+
+  void onComplete() async {
+    if (_productNameController.text.isEmpty ||
+        _sellingPriceController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hãy điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+
+    final idProduct = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final imageUrls = await StoreService().uploadImages(
+      _selectedImages,
+      idProduct,
+    );
+
+    final product = Product(
+      id: idProduct,
+      name: _productNameController.text,
+      price: StoreService().parseCurrency(_sellingPriceController.text),
+      costPrice: StoreService().parseCurrency(_costPriceController.text),
+      promotionalPrice:
+          StoreService().parseCurrency(_promotionalPriceController.text),
+      unitOfMeasure: _unitOfMeasureController.text,
+      category: 'Example Category',
+      description: _descriptionController.text,
+      imageUrls: imageUrls,
+      accompanyingItems: [],
+    );
+
+    await StoreService().addProductToStore(product);
+
+    toastification.show(
+      context: context,
+      title: Text('Thêm sản phẩm thành công'),
+      autoCloseDuration: const Duration(seconds: 3),
+      style: ToastificationStyle.flat,
+      type: ToastificationType.success,
+      closeButtonShowType: CloseButtonShowType.always,
+      closeOnClick: false,
+      pauseOnHover: true,
+      dragToClose: true,
+      // applyBlurEffect: true,
+      showProgressBar: false,
+    );
+    Navigator.pop(context);
+  }
+
+  Future<void> _pickImages() async {
+    final List<XFile>? pickedFiles = await _picker.pickMultiImage();
+
+    if (pickedFiles != null) {
+      setState(() {
+        _selectedImages.addAll(
+          pickedFiles.map((xFile) => File(xFile.path)).toList(),
+        );
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +182,7 @@ class _AddNewProductState extends State<AddNewProduct> {
           child: Column(
             children: [
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Container(
                 alignment: Alignment.centerLeft,
@@ -117,27 +199,27 @@ class _AddNewProductState extends State<AddNewProduct> {
                 ),
               ),
               SizedBox(height: 8.sp),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    const _buttonAddImage(),
-                    const _imageProduct(
-                      image: "product1",
-                    ),
-                    const _imageProduct(
-                      image: "product2",
-                    ),
-                    const _imageProduct(
-                      image: "product7",
-                    ),
-                    const _imageProduct(
-                      image: "product4",
-                    ),
-                    SizedBox(
-                      width: 20.sp,
-                    ),
-                  ],
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _buttonAddImage(onTap: _pickImages),
+                      ..._selectedImages.map((file) => _imageProduct(
+                            image: file.path,
+                            onDelete: () {
+                              setState(() {
+                                _selectedImages.remove(file);
+                              });
+                            },
+                          )),
+                      SizedBox(
+                        width: 20.sp,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -145,7 +227,8 @@ class _AddNewProductState extends State<AddNewProduct> {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.sp),
-                child: const _textFieldAddNewProduct(
+                child: _textFieldAddNewProduct(
+                  controller: _productNameController,
                   title: "Tên sản phẩm",
                   hintText: "Ví dụ: bánh mì,...",
                   isNumeric: false,
@@ -159,8 +242,9 @@ class _AddNewProductState extends State<AddNewProduct> {
                 padding: EdgeInsets.symmetric(horizontal: 20.sp),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: _textFieldAddNewProduct(
+                        controller: _sellingPriceController,
                         title: "Giá bán",
                         hintText: "0.00",
                         isNumeric: true,
@@ -168,8 +252,9 @@ class _AddNewProductState extends State<AddNewProduct> {
                       ),
                     ),
                     SizedBox(width: 12.sp),
-                    const Expanded(
+                    Expanded(
                       child: _textFieldAddNewProduct(
+                        controller: _costPriceController,
                         title: "Giá vốn",
                         hintText: "0.00",
                         isNumeric: true,
@@ -185,16 +270,18 @@ class _AddNewProductState extends State<AddNewProduct> {
                 padding: EdgeInsets.symmetric(horizontal: 20.sp),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: _textFieldAddNewProduct(
+                        controller: _promotionalPriceController,
                         title: "Giá khuyến mãi",
                         hintText: "0.00",
                         isNumeric: true,
                       ),
                     ),
                     SizedBox(width: 12.sp),
-                    const Expanded(
+                    Expanded(
                       child: _textFieldAddNewProduct(
+                        controller: _unitOfMeasureController,
                         title: "Đơn vị",
                         hintText: "Ví dụ: 1 cái,...",
                         isNumeric: false,
@@ -232,7 +319,48 @@ class _AddNewProductState extends State<AddNewProduct> {
                         width: 10.sp,
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Container(
+                                height: 400.sp,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: AppColors.backGroundButtonColor,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(
+                                      10.sp,
+                                    ),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      margin:
+                                          EdgeInsets.symmetric(vertical: 10.sp),
+                                      height: 2.sp,
+                                      width: 80.sp,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey,
+                                        borderRadius:
+                                            BorderRadius.circular(20.sp),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Danh mục",
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: AppColors.textColor,
+                                        fontFamily: "QuicksandBold",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
                         icon: Icon(
                           Icons.menu,
                           size: 28.sp,
@@ -266,7 +394,8 @@ class _AddNewProductState extends State<AddNewProduct> {
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.sp),
-                child: const _textFieldAddNewProduct(
+                child: _textFieldAddNewProduct(
+                  controller: _descriptionController,
                   title: "Mô tả",
                   hintText: "Ví dụ: bánh mì đặc biệt thơm ngon ...",
                   isNumeric: false,
@@ -311,7 +440,7 @@ class _AddNewProductState extends State<AddNewProduct> {
           ),
         ),
       ),
-      bottomNavigationBar: const MyBottomNavigationBar(),
+      bottomNavigationBar: MyBottomNavigationBar(onComplete: onComplete),
     );
   }
 }
@@ -332,13 +461,12 @@ class _itemCategory extends StatefulWidget {
 }
 
 class _itemCategoryState extends State<_itemCategory> {
-  bool _isSelected = false; // Local state to manage isSelected
+  bool _isSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _isSelected =
-        widget.isSelected; // Initialize local state with widget's isSelected
+    _isSelected = widget.isSelected;
   }
 
   @override
@@ -350,7 +478,7 @@ class _itemCategoryState extends State<_itemCategory> {
           GestureDetector(
             onTap: () {
               setState(() {
-                _isSelected = !_isSelected; // Toggle isSelected state
+                _isSelected = !_isSelected;
               });
             },
             child: Container(
@@ -408,8 +536,10 @@ class _itemCategoryState extends State<_itemCategory> {
 }
 
 class MyBottomNavigationBar extends StatelessWidget {
+  final VoidCallback onComplete;
   const MyBottomNavigationBar({
     super.key,
+    required this.onComplete,
   });
 
   @override
@@ -459,7 +589,7 @@ class MyBottomNavigationBar extends StatelessWidget {
           ),
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onComplete,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
@@ -483,26 +613,30 @@ class MyBottomNavigationBar extends StatelessWidget {
 }
 
 class _buttonAddImage extends StatelessWidget {
-  const _buttonAddImage();
+  final VoidCallback onTap;
+  const _buttonAddImage({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 80.sp,
-      height: 80.sp,
-      margin: EdgeInsets.only(left: 20.sp),
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 1.sp,
-          color: Colors.grey[300]!,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80.sp,
+        height: 80.sp,
+        margin: EdgeInsets.only(left: 20.sp),
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 1.sp,
+            color: Colors.grey[300]!,
+          ),
+          color: AppColors.backGroundButtonColor,
+          borderRadius: BorderRadius.circular(12),
         ),
-        color: AppColors.backGroundButtonColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        Icons.add_rounded,
-        color: Colors.grey,
-        size: 50.sp,
+        child: Icon(
+          Icons.add_rounded,
+          color: Colors.grey,
+          size: 50.sp,
+        ),
       ),
     );
   }
@@ -530,8 +664,8 @@ class _imageProduct extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              'assets/images/$image.png',
+            child: Image.file(
+              File(image),
               fit: BoxFit.cover,
               width: 80.sp,
               height: 80.sp,
@@ -569,11 +703,13 @@ class _textFieldAddNewProduct extends StatelessWidget {
   final String hintText;
   final bool isNumeric;
   final bool isRequired;
+  final TextEditingController controller;
   const _textFieldAddNewProduct({
     required this.title,
     required this.hintText,
     this.isNumeric = false,
     this.isRequired = false,
+    required this.controller,
   });
 
   @override
@@ -602,7 +738,7 @@ class _textFieldAddNewProduct extends StatelessWidget {
               ),
           ],
         ),
-        SizedBox(height: 8.sp),
+        SizedBox(height: 10.sp),
         Container(
           height: 48.sp,
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
@@ -615,6 +751,21 @@ class _textFieldAddNewProduct extends StatelessWidget {
             ),
           ),
           child: TextField(
+            onChanged: (value) {
+              controller.text = value;
+              if (isNumeric) {
+                final formattedText =
+                    StoreService().formatCurrencyByString(value);
+                if (controller.text != formattedText) {
+                  controller.value = TextEditingValue(
+                    text: formattedText,
+                    selection: TextSelection.collapsed(
+                        offset: formattedText.length - 1),
+                  );
+                }
+              }
+            },
+            controller: controller,
             keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
             inputFormatters:
                 isNumeric ? [FilteringTextInputFormatter.digitsOnly] : [],

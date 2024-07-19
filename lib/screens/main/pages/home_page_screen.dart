@@ -1,11 +1,12 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:storemaster/models/daily_stats.dart';
+import 'package:storemaster/models/store_details.dart';
 import 'package:storemaster/screens/main/customer/list_customers_screen.dart';
 import 'package:storemaster/screens/main/order/main_order_screen.dart';
 import 'package:storemaster/screens/main/product/main_products_screen.dart';
+import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
 import 'package:storemaster/widgets/items/item_service.dart';
 
@@ -18,29 +19,11 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final ref = FirebaseDatabase.instanceFor(
-          app: Firebase.app(),
-          databaseURL:
-              'https://store-master-dinnblack-default-rtdb.asia-southeast1.firebasedatabase.app')
-      .ref('count');
-  String revenue = '';
 
   @override
   void initState() {
     super.initState();
     _searchController.dispose();
-    print(revenue);
-    _fetchRevenue();
-    print(revenue);
-  }
-
-  void _fetchRevenue() {
-    ref.onValue.listen((DatabaseEvent event) {
-      var snapshot = event.snapshot;
-      setState(() {
-        revenue = snapshot.value.toString();
-      });
-    });
   }
 
   @override
@@ -57,7 +40,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
           color: AppColors.backGroundButtonColor,
           child: Column(
             children: [
-              _topBody(revenue: revenue),
+              _topBody(),
               SizedBox(
                 height: 20.sp,
               ),
@@ -79,13 +62,18 @@ PreferredSize appBar() {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Bánh mì Vũ Anh",
-            style: TextStyle(
-              color: AppColors.whiteColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16.sp,
-            ),
+          FutureBuilder<StoreDetails?>(
+            future: StoreService().fetchStoreDetails(),
+            builder: (context, snapshot) {
+              return Text(
+                '${snapshot.data?.storeName}',
+                style: TextStyle(
+                  color: AppColors.whiteColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                ),
+              );
+            },
           ),
           Text(
             "quản trị viên",
@@ -230,21 +218,19 @@ class _serviceItems extends StatelessWidget {
 }
 
 class _topBody extends StatelessWidget {
-  final String revenue;
-
-  const _topBody({required this.revenue});
+  const _topBody();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.primaryColor,
         borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(16),
+          bottom: Radius.circular(16.sp),
         ),
       ),
       padding: EdgeInsets.only(
-        top: 20.sp,
+        top: 10.sp,
         left: 20.sp,
         right: 20.sp,
         bottom: 20.sp,
@@ -253,9 +239,9 @@ class _topBody extends StatelessWidget {
         children: [
           const _textfieldSearch(),
           SizedBox(
-            height: 24.sp,
+            height: 20.sp,
           ),
-          _revenueSummary(revenue: revenue),
+          _revenueSummary(),
         ],
       ),
     );
@@ -263,8 +249,7 @@ class _topBody extends StatelessWidget {
 }
 
 class _revenueSummary extends StatelessWidget {
-  final String revenue;
-  const _revenueSummary({required this.revenue});
+  const _revenueSummary();
 
   @override
   Widget build(BuildContext context) {
@@ -306,14 +291,20 @@ class _revenueSummary extends StatelessWidget {
                         SizedBox(
                           height: 8.sp,
                         ),
-                        Text(
-                          revenue,
-                          style: TextStyle(
-                            color: AppColors.whiteColor,
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.8,
-                          ),
+                        FutureBuilder<DailyStats?>(
+                          future: StoreService().fetchDailyStats(),
+                          builder: (context, snapshot) {
+                            final value = StoreService().formatCurrency(
+                                snapshot.data?.dailyRevenue ?? 0);
+                            return Text(
+                              value,
+                              style: TextStyle(
+                                color: AppColors.whiteColor,
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -383,13 +374,19 @@ class _revenueSummary extends StatelessWidget {
                                 fontSize: 14.sp,
                               ),
                             ),
-                            Text(
-                              "15",
-                              style: TextStyle(
-                                color: AppColors.whiteColor,
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            FutureBuilder<DailyStats?>(
+                              future: StoreService().fetchDailyStats(),
+                              builder: (context, snapshot) {
+                                final value = snapshot.data?.currentOrders ?? 0;
+                                return Text(
+                                  '$value',
+                                  style: TextStyle(
+                                    color: AppColors.whiteColor,
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -437,13 +434,20 @@ class _revenueSummary extends StatelessWidget {
                                 fontSize: 14.sp,
                               ),
                             ),
-                            Text(
-                              "32",
-                              style: TextStyle(
-                                color: AppColors.whiteColor,
-                                fontSize: 20.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            FutureBuilder<DailyStats?>(
+                              future: StoreService().fetchDailyStats(),
+                              builder: (context, snapshot) {
+                                final value =
+                                    snapshot.data?.completedOrdersToday ?? 0;
+                                return Text(
+                                  '$value',
+                                  style: TextStyle(
+                                    color: AppColors.whiteColor,
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
