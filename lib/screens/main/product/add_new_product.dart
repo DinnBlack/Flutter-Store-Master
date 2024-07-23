@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:storemaster/models/categories.dart';
 import 'package:storemaster/models/product.dart';
 import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
@@ -27,6 +29,59 @@ class _AddNewProductState extends State<AddNewProduct> {
   final TextEditingController _descriptionController = TextEditingController();
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
+  final List<String> items = List.generate(20, (index) => "Item $index");
+  final TextEditingController _newCategoryController = TextEditingController();
+  String _selectedCategory = '';
+  late Future<List<Categories?>> _futureCategories;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureCategories = StoreService().fetchCategories();
+  }
+
+  void _onCategorySelected(String categoryTitle) {
+    setState(() {
+      _selectedCategory = categoryTitle;
+    });
+  }
+
+  void _onClearSelection() {
+    setState(() {
+      _selectedCategory = '';
+    });
+  }
+
+  void onAddNewCategory() async {
+    if (_newCategoryController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hãy điền tên danh mục!')),
+      );
+      return;
+    }
+
+    final category = Categories(
+      name: _newCategoryController.text.trim(),
+      itemCount: 0,
+    );
+
+    await StoreService().addCategoryToStore(category);
+
+    toastification.show(
+      context: context,
+      title: Text('Thêm danh mục mới thành công'),
+      autoCloseDuration: const Duration(seconds: 2),
+      style: ToastificationStyle.flat,
+      type: ToastificationType.success,
+      closeButtonShowType: CloseButtonShowType.always,
+      closeOnClick: false,
+      pauseOnHover: true,
+      dragToClose: true,
+      // applyBlurEffect: true,
+      showProgressBar: false,
+    );
+    Navigator.pop(context);
+  }
 
   void onComplete() async {
     if (_productNameController.text.isEmpty ||
@@ -52,7 +107,7 @@ class _AddNewProductState extends State<AddNewProduct> {
       promotionalPrice:
           StoreService().parseCurrency(_promotionalPriceController.text),
       unitOfMeasure: _unitOfMeasureController.text,
-      category: 'Example Category',
+      category: _selectedCategory,
       description: _descriptionController.text,
       imageUrls: imageUrls,
       accompanyingItems: [],
@@ -101,11 +156,11 @@ class _AddNewProductState extends State<AddNewProduct> {
         child: AppBar(
           backgroundColor: AppColors.whiteColor,
           centerTitle: true,
-          title: const Text(
+          title: Text(
             "Thêm sản phẩm mới",
             style: TextStyle(
               color: AppColors.textColor,
-              fontSize: 18,
+              fontSize: 16.sp,
               fontFamily: "QuicksandBold",
             ),
           ),
@@ -187,7 +242,7 @@ class _AddNewProductState extends State<AddNewProduct> {
               Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.symmetric(
-                  horizontal: 20.sp,
+                  horizontal: 10.sp,
                 ),
                 child: Text(
                   "Ảnh sản phẩm",
@@ -198,7 +253,7 @@ class _AddNewProductState extends State<AddNewProduct> {
                   ),
                 ),
               ),
-              SizedBox(height: 8.sp),
+              SizedBox(height: 10.sp),
               Align(
                 alignment: Alignment.centerLeft,
                 child: SingleChildScrollView(
@@ -216,17 +271,17 @@ class _AddNewProductState extends State<AddNewProduct> {
                             },
                           )),
                       SizedBox(
-                        width: 20.sp,
+                        width: 10.sp,
                       ),
                     ],
                   ),
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                padding: EdgeInsets.symmetric(horizontal: 10.sp),
                 child: _textFieldAddNewProduct(
                   controller: _productNameController,
                   title: "Tên sản phẩm",
@@ -236,10 +291,10 @@ class _AddNewProductState extends State<AddNewProduct> {
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                padding: EdgeInsets.symmetric(horizontal: 10.sp),
                 child: Row(
                   children: [
                     Expanded(
@@ -251,7 +306,7 @@ class _AddNewProductState extends State<AddNewProduct> {
                         isRequired: true,
                       ),
                     ),
-                    SizedBox(width: 12.sp),
+                    SizedBox(width: 10.sp),
                     Expanded(
                       child: _textFieldAddNewProduct(
                         controller: _costPriceController,
@@ -264,10 +319,10 @@ class _AddNewProductState extends State<AddNewProduct> {
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                padding: EdgeInsets.symmetric(horizontal: 10.sp),
                 child: Row(
                   children: [
                     Expanded(
@@ -278,7 +333,7 @@ class _AddNewProductState extends State<AddNewProduct> {
                         isNumeric: true,
                       ),
                     ),
-                    SizedBox(width: 12.sp),
+                    SizedBox(width: 10.sp),
                     Expanded(
                       child: _textFieldAddNewProduct(
                         controller: _unitOfMeasureController,
@@ -291,12 +346,12 @@ class _AddNewProductState extends State<AddNewProduct> {
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.symmetric(
-                  horizontal: 20.sp,
+                  horizontal: 10.sp,
                 ),
                 child: Text(
                   "Danh mục",
@@ -307,93 +362,78 @@ class _AddNewProductState extends State<AddNewProduct> {
                   ),
                 ),
               ),
-              SizedBox(height: 8.sp),
+              SizedBox(height: 10.sp),
               Container(
                 alignment: Alignment.centerLeft,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 10.sp,
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Container(
-                                height: 400.sp,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: AppColors.backGroundButtonColor,
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(
-                                      10.sp,
-                                    ),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      margin:
-                                          EdgeInsets.symmetric(vertical: 10.sp),
-                                      height: 2.sp,
-                                      width: 80.sp,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius:
-                                            BorderRadius.circular(20.sp),
-                                      ),
-                                    ),
-                                    Text(
-                                      "Danh mục",
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: AppColors.textColor,
-                                        fontFamily: "QuicksandBold",
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        icon: Icon(
-                          Icons.menu,
-                          size: 28.sp,
+                child: FutureBuilder<List<Categories?>>(
+                  future: _futureCategories,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Lỗi: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(width: 10.sp),
+                            IconButton(
+                              onPressed: () {
+                                _showBottomSheetCategories(
+                                    context, _selectedCategory);
+                              },
+                              icon: Icon(
+                                Icons.menu,
+                                size: 28.sp,
+                              ),
+                            ),
+                            Text('Không có danh mục nào'),
+                            SizedBox(width: 20.sp),
+                          ],
                         ),
+                      );
+                    }
+
+                    final categories = snapshot.data!;
+
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 10.sp),
+                          IconButton(
+                            onPressed: () {
+                              _showBottomSheetCategories(
+                                  context, _selectedCategory);
+                            },
+                            icon: Icon(
+                              Icons.menu,
+                              size: 28.sp,
+                            ),
+                          ),
+                          ...categories.map((category) {
+                            return _itemCategory(
+                              title: category!.name,
+                              isSelected: _selectedCategory == category.name,
+                              onSelect: () =>
+                                  _onCategorySelected(category.name),
+                            );
+                          }).toList(),
+                          SizedBox(width: 20.sp),
+                        ],
                       ),
-                      const _itemCategory(
-                        title: "Bánh mì",
-                        isSelected: true,
-                      ),
-                      const _itemCategory(
-                        title: "Nước ngọt",
-                        isSelected: false,
-                      ),
-                      const _itemCategory(
-                        title: "Trà sữa",
-                        isSelected: false,
-                      ),
-                      const _itemCategory(
-                        title: "Mì Cay",
-                        isSelected: false,
-                      ),
-                      SizedBox(
-                        width: 20.sp,
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                padding: EdgeInsets.symmetric(horizontal: 10.sp),
                 child: _textFieldAddNewProduct(
                   controller: _descriptionController,
                   title: "Mô tả",
@@ -403,21 +443,39 @@ class _AddNewProductState extends State<AddNewProduct> {
                 ),
               ),
               SizedBox(
-                height: 12.sp,
+                height: 10.sp,
               ),
               Container(
                 alignment: Alignment.centerLeft,
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.sp,
                 ),
-                child: Text(
-                  "Món bán kèm",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textColor,
-                    fontFamily: "QuicksandBold",
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Thêm tùy chọn",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AppColors.textColor,
+                        fontFamily: "QuicksandBold",
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _showBottomSheetOptions(context);
+                      },
+                      icon: Icon(
+                        Icons.add_rounded,
+                        size: 24.sp,
+                        color: AppColors.textColor,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              SizedBox(
+                height: 10.sp,
               ),
               Container(
                 alignment: Alignment.center,
@@ -443,17 +501,653 @@ class _AddNewProductState extends State<AddNewProduct> {
       bottomNavigationBar: MyBottomNavigationBar(onComplete: onComplete),
     );
   }
+
+  Future<dynamic> _showBottomSheetOptions(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 400.sp,
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 10.sp),
+          decoration: BoxDecoration(
+            color: AppColors.whiteColor,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(
+                10.sp,
+              ),
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 10.sp),
+                height: 2.sp,
+                width: 80.sp,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(10.sp),
+                ),
+              ),
+              Text(
+                "Thêm tùy chọn",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: AppColors.textColor,
+                  fontFamily: "QuicksandBold",
+                ),
+              ),
+              SizedBox(height: 10.sp),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 40.sp,
+                      padding: EdgeInsets.symmetric(horizontal: 10.sp),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.backGroundButtonColor,
+                        borderRadius: BorderRadius.circular(10.sp),
+                        border: Border.all(
+                          color: Colors.grey[300]!,
+                          width: 1.sp,
+                        ),
+                      ),
+                      child: TextField(
+                        onChanged: (value) {},
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Tìm kiếm tùy chọn",
+                          hintStyle: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12.sp,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          TextEditingController categoryController =
+                              TextEditingController();
+
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.sp),
+                            ),
+                            backgroundColor: Colors.white,
+                            child: Padding(
+                              padding: EdgeInsets.all(16.sp),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "Thêm danh mục mới",
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 20.sp),
+                                  Container(
+                                    height: 40.sp,
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10.sp),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.backGroundButtonColor,
+                                      borderRadius:
+                                          BorderRadius.circular(10.sp),
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                        width: 1.sp,
+                                      ),
+                                    ),
+                                    child: TextField(
+                                      onChanged: (value) {
+                                        categoryController.text = value;
+                                      },
+                                      controller: _newCategoryController,
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: "Nhập tên danh mục",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 14.sp,
+                                        ),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 20.sp),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Container(
+                                            height: 39.sp,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.whiteColor,
+                                              border: Border.all(
+                                                color: Colors.grey,
+                                                width: 1.sp,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10.sp),
+                                            ),
+                                            child: Text(
+                                              "Hủy",
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                color: AppColors.textColor,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 10.sp),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            onAddNewCategory();
+                                            _newCategoryController.clear();
+                                          },
+                                          child: Container(
+                                            height: 40.sp,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.sp),
+                                            ),
+                                            child: Text(
+                                              "Tạo danh mục",
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                color: AppColors.whiteColor,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Container(
+                      width: 40.sp,
+                      height: 40.sp,
+                      margin: EdgeInsets.only(left: 10.sp),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1.sp,
+                          color: AppColors.primaryColor,
+                        ),
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(10.sp),
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        color: AppColors.whiteColor,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.sp),
+              Expanded(
+                child: Skeletonizer(
+                  enabled: false,
+                  ignoreContainers: true,
+                  justifyMultiLineText: true,
+                  child: FutureBuilder<List<Categories?>>(
+                    future: StoreService().fetchCategories(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Lỗi: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text('Không có danh mục nào'));
+                      }
+
+                      final categories = snapshot.data!;
+
+                      return GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 3.2,
+                        ),
+                        itemCount: categories.length,
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory =
+                                    category!.name; // Update selected category
+                              });
+                            },
+                            child: Container(
+                              height: 40.sp,
+                              alignment: Alignment.centerLeft,
+                              padding: EdgeInsets.symmetric(horizontal: 10.sp),
+                              decoration: BoxDecoration(
+                                color: _selectedCategory == category?.name
+                                    ? AppColors.primaryColor
+                                    : AppColors.backGroundButtonColor,
+                                borderRadius: BorderRadius.circular(10.sp),
+                                border: Border.all(
+                                  color: Colors.grey[300]!,
+                                  width: 1.sp,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    category!.name,
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontFamily: "QuicksandBold",
+                                      color: _selectedCategory == category.name
+                                          ? AppColors.whiteColor
+                                          : AppColors.textColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Số sản phẩm: ${category.getItemCount}",
+                                    style: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: _selectedCategory == category.name
+                                          ? AppColors.whiteColor
+                                          : AppColors.textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<dynamic> _showBottomSheetCategories(
+      BuildContext context, String? selectedCategory) {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              height: 400.sp,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(10.sp),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.sp),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10.sp),
+                      height: 2.sp,
+                      width: 80.sp,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(20.sp),
+                      ),
+                    ),
+                    Text(
+                      "Danh mục",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AppColors.textColor,
+                        fontFamily: "QuicksandBold",
+                      ),
+                    ),
+                    SizedBox(height: 10.sp),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 40.sp,
+                            padding: EdgeInsets.symmetric(horizontal: 10.sp),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.backGroundButtonColor,
+                              borderRadius: BorderRadius.circular(10.sp),
+                              border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 1.sp,
+                              ),
+                            ),
+                            child: TextField(
+                              onChanged: (value) {},
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: "Tìm kiếm danh mục",
+                                hintStyle: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12.sp,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                TextEditingController categoryController =
+                                    TextEditingController();
+
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.sp),
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.sp),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Thêm danh mục mới",
+                                          style: TextStyle(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 20.sp),
+                                        Container(
+                                          height: 40.sp,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10.sp),
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                AppColors.backGroundButtonColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10.sp),
+                                            border: Border.all(
+                                              color: Colors.grey[300]!,
+                                              width: 1.sp,
+                                            ),
+                                          ),
+                                          child: TextField(
+                                            onChanged: (value) {
+                                              categoryController.text = value;
+                                            },
+                                            controller: _newCategoryController,
+                                            style: TextStyle(
+                                              fontSize: 14.sp,
+                                            ),
+                                            decoration: InputDecoration(
+                                              hintText: "Nhập tên danh mục",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14.sp,
+                                              ),
+                                              border: InputBorder.none,
+                                              isDense: true,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(height: 20.sp),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Container(
+                                                  height: 39.sp,
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.whiteColor,
+                                                    border: Border.all(
+                                                      color: Colors.grey,
+                                                      width: 1.sp,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.sp),
+                                                  ),
+                                                  child: Text(
+                                                    "Hủy",
+                                                    style: TextStyle(
+                                                      fontSize: 14.sp,
+                                                      color:
+                                                          AppColors.textColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.sp),
+                                            Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  onAddNewCategory();
+                                                  _newCategoryController
+                                                      .clear();
+                                                },
+                                                child: Container(
+                                                  height: 40.sp,
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.sp),
+                                                  ),
+                                                  child: Text(
+                                                    "Tạo danh mục",
+                                                    style: TextStyle(
+                                                      fontSize: 14.sp,
+                                                      color:
+                                                          AppColors.whiteColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            width: 40.sp,
+                            height: 40.sp,
+                            margin: EdgeInsets.only(left: 10.sp),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 1.sp,
+                                color: AppColors.primaryColor,
+                              ),
+                              color: AppColors.primaryColor,
+                              borderRadius: BorderRadius.circular(10.sp),
+                            ),
+                            child: Icon(
+                              Icons.add_rounded,
+                              color: AppColors.whiteColor,
+                              size: 24.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.sp),
+                    Expanded(
+                      child: Skeletonizer(
+                        enabled: false,
+                        ignoreContainers: true,
+                        justifyMultiLineText: true,
+                        child: FutureBuilder<List<Categories?>>(
+                          future: StoreService().fetchCategories(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                  child: Text('Lỗi: ${snapshot.error}'));
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return Center(
+                                  child: Text('Không có danh mục nào'));
+                            }
+
+                            final categories = snapshot.data!;
+
+                            return GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 3.2,
+                              ),
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedCategory = category!
+                                          .name; // Update selected category
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 40.sp,
+                                    alignment: Alignment.centerLeft,
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10.sp),
+                                    decoration: BoxDecoration(
+                                      color: _selectedCategory == category?.name
+                                          ? AppColors.primaryColor
+                                          : AppColors.backGroundButtonColor,
+                                      borderRadius:
+                                          BorderRadius.circular(10.sp),
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                        width: 1.sp,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          category!.name,
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontFamily: "QuicksandBold",
+                                            color: _selectedCategory ==
+                                                    category.name
+                                                ? AppColors.whiteColor
+                                                : AppColors.textColor,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Số sản phẩm: ${category.getItemCount}",
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            color: _selectedCategory ==
+                                                    category.name
+                                                ? AppColors.whiteColor
+                                                : AppColors.textColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      setState(() {
+        _futureCategories = StoreService().fetchCategories();
+      });
+    });
+  }
 }
 
 class _itemCategory extends StatefulWidget {
   final String title;
   final bool isSelected;
-  final VoidCallback? onDelete;
+  final VoidCallback onSelect;
 
   const _itemCategory({
     required this.title,
     required this.isSelected,
-    this.onDelete,
+    required this.onSelect,
   });
 
   @override
@@ -461,75 +1155,49 @@ class _itemCategory extends StatefulWidget {
 }
 
 class _itemCategoryState extends State<_itemCategory> {
-  bool _isSelected = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isSelected = widget.isSelected;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 12),
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isSelected = !_isSelected;
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
-              decoration: _isSelected
-                  ? BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(8.sp),
-                    )
-                  : BoxDecoration(
-                      color: AppColors.backGroundButtonColor,
-                      borderRadius: BorderRadius.circular(8.sp),
-                      border: Border.all(
-                        color: Colors.grey[300]!,
-                      ),
-                    ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: _isSelected
-                          ? AppColors.whiteColor
-                          : AppColors.textColor,
-                    ),
-                  ),
-                  if (_isSelected)
-                    Padding(
-                      padding: EdgeInsets.only(left: 12.sp),
-                      child: GestureDetector(
-                        onTap: widget.onDelete, // Trigger onDelete callback
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: AppColors.whiteColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.red,
-                            size: 14.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+      margin: EdgeInsets.only(left: 10.sp),
+      child: GestureDetector(
+        onTap: () {
+          widget.onSelect();
+        },
+        child: Container(
+          height: 40.sp,
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.sp,
           ),
-        ],
+          decoration: widget.isSelected
+              ? BoxDecoration(
+                  color: AppColors.primaryColor,
+                  borderRadius: BorderRadius.circular(8.sp),
+                  border: Border.all(
+                    color: AppColors.primaryColor,
+                  ),
+                )
+              : BoxDecoration(
+                  color: AppColors.backGroundButtonColor,
+                  borderRadius: BorderRadius.circular(10.sp),
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                  ),
+                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: widget.isSelected
+                      ? AppColors.whiteColor
+                      : AppColors.textColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -623,14 +1291,14 @@ class _buttonAddImage extends StatelessWidget {
       child: Container(
         width: 80.sp,
         height: 80.sp,
-        margin: EdgeInsets.only(left: 20.sp),
+        margin: EdgeInsets.only(left: 10.sp),
         decoration: BoxDecoration(
           border: Border.all(
             width: 1.sp,
             color: Colors.grey[300]!,
           ),
           color: AppColors.backGroundButtonColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10.sp),
         ),
         child: Icon(
           Icons.add_rounded,
@@ -655,15 +1323,15 @@ class _imageProduct extends StatelessWidget {
     return Container(
       width: 80.sp,
       height: 80.sp,
-      margin: EdgeInsets.only(left: 20.sp),
+      margin: EdgeInsets.only(left: 10.sp),
       decoration: BoxDecoration(
         color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10.sp),
       ),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10.sp),
             child: Image.file(
               File(image),
               fit: BoxFit.cover,
@@ -727,10 +1395,10 @@ class _textFieldAddNewProduct extends StatelessWidget {
                 fontFamily: "QuicksandBold",
               ),
             ),
-            SizedBox(width: 4.sp),
+            SizedBox(width: 10.sp),
             if (isRequired)
               Text(
-                ' *',
+                '(bắt buộc)',
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: Colors.red,
@@ -740,7 +1408,8 @@ class _textFieldAddNewProduct extends StatelessWidget {
         ),
         SizedBox(height: 10.sp),
         Container(
-          height: 48.sp,
+          height: 40.sp,
+          alignment: Alignment.center,
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
             color: AppColors.backGroundButtonColor,
@@ -773,8 +1442,10 @@ class _textFieldAddNewProduct extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(color: Colors.grey, fontSize: 14.sp),
+              isDense: true,
               border: InputBorder.none,
             ),
+            // maxLines: null,
           ),
         ),
       ],

@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:storemaster/models/categories.dart';
 import 'package:storemaster/models/daily_stats.dart';
 import 'package:storemaster/models/product.dart';
 import 'package:storemaster/models/store_details.dart';
@@ -66,6 +68,74 @@ class StoreService {
       print('Error fetching daily stats: $e');
     }
     return null;
+  }
+
+  Future<List<Categories?>> fetchCategories() async {
+    try {
+      final DatabaseEvent event =
+          await usersRef.child(uid).child('userStores').once();
+      final DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        final Map<dynamic, dynamic> userStoresRaw =
+            snapshot.value as Map<dynamic, dynamic>;
+        final Map<String, dynamic> userStores = userStoresRaw.map(
+            (key, value) =>
+                MapEntry(key.toString(), value as Map<dynamic, dynamic>));
+        if (userStores.isNotEmpty) {
+          final firstStoreKey = userStores.keys.first;
+          final firstStore = userStores[firstStoreKey] as Map<dynamic, dynamic>;
+          if (firstStore['categories'] != null) {
+            final categoriesMap =
+                firstStore['categories'] as Map<dynamic, dynamic>;
+            return categoriesMap.entries.map((entry) {
+              return Categories.fromMap(
+                Map<String, dynamic>.from(entry.value as Map<dynamic, dynamic>),
+              );
+            }).toList();
+          } else {
+            print('categories is missing or null');
+          }
+        } else {
+          print('User Stores is empty');
+        }
+      } else {
+        print('Snapshot value is null');
+      }
+    } catch (e) {
+      print('Error fetching categories: $e');
+    }
+    return [];
+  }
+
+  Future<void> addCategoryToStore(Categories category) async {
+    try {
+      final DatabaseReference storeRef =
+          usersRef.child(uid).child('userStores');
+
+      // Fetch the reference to the store
+      final DatabaseEvent event = await storeRef.once();
+      final DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.value != null) {
+        final Map<String, dynamic> userStores =
+            Map<String, dynamic>.from(snapshot.value as Map<dynamic, dynamic>);
+
+        if (userStores.isNotEmpty) {
+          final String firstStoreKey = userStores.keys.first;
+          final DatabaseReference categoriesRef =
+              storeRef.child(firstStoreKey).child('categories');
+          await categoriesRef.push().set(category.toMap());
+
+          print('Category added successfully');
+        } else {
+          print('No stores found');
+        }
+      } else {
+        print('No data found in the snapshot');
+      }
+    } catch (e) {
+      print('Error adding category: $e');
+    }
   }
 
   // Fetch Store Details
@@ -143,6 +213,50 @@ class StoreService {
     return [];
   }
 
+  Future<List<Product>> fetchProductsByCategory(String? category) async {
+    try {
+      final DatabaseEvent event = await usersRef.child(uid).child('userStores').once();
+      final DataSnapshot snapshot = event.snapshot;
+
+      if (snapshot.value != null) {
+        final Map<dynamic, dynamic> userStoresRaw = snapshot.value as Map<dynamic, dynamic>;
+        final Map<String, dynamic> userStores = userStoresRaw.map((key, value) => MapEntry(key.toString(), value as Map<dynamic, dynamic>));
+
+        if (userStores.isNotEmpty) {
+          final firstStoreKey = userStores.keys.first;
+          final firstStore = userStores[firstStoreKey] as Map<dynamic, dynamic>;
+
+          if (firstStore.containsKey('products') && firstStore['products'] != null) {
+            final productsMap = firstStore['products'] as Map<dynamic, dynamic>;
+            if (productsMap.isNotEmpty) {
+              final products = productsMap.entries.map((entry) {
+                final productMap = Map<String, dynamic>.from(entry.value);
+                return Product.fromMap(productMap);
+              }).toList();
+
+              if (category != null && category.isNotEmpty) {
+                return products.where((product) => product.category == category).toList();
+              }
+
+              return products;
+            } else {
+              print('Products list is empty');
+            }
+          } else {
+            print('Products is missing or null');
+          }
+        } else {
+          print('User Stores is empty');
+        }
+      } else {
+        print('Snapshot value is null');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+    }
+    return [];
+  }
+
   // Function to add a product to the store
   Future<void> addProductToStore(Product product) async {
     try {
@@ -177,9 +291,9 @@ class StoreService {
 
   String formatCurrency(int amount) {
     final NumberFormat formatter = NumberFormat.currency(
-      locale: 'vi_VN', // Vietnamese locale
-      symbol: 'đ', // Currency symbol
-      decimalDigits: 0, // Number of decimal places
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
     );
     String formattedAmount = formatter.format(amount);
     return formattedAmount.replaceAll(RegExp(r'\s+'), '');
@@ -193,9 +307,9 @@ class StoreService {
 
   String formatCurrencyByString(String value) {
     final NumberFormat formatter = NumberFormat.currency(
-      locale: 'vi_VN', // Vietnamese locale
-      symbol: 'đ', // No currency symbol
-      decimalDigits: 0, // No decimal places
+      locale: 'vi_VN',
+      symbol: 'đ',
+      decimalDigits: 0,
     );
     final int parsedValue =
         int.tryParse(value.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:storemaster/models/categories.dart';
 import 'package:storemaster/models/product.dart';
 import 'package:storemaster/services/store_service.dart';
 import 'package:storemaster/utils/const.dart';
@@ -15,6 +16,15 @@ class MainProductsScreen extends StatefulWidget {
 
 class _MainProductsScreenState extends State<MainProductsScreen> {
   bool _enabled = true;
+
+  String? _selectedCategory;
+
+  void _onCategorySelected(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,40 +82,48 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
             ),
             Container(
               color: AppColors.whiteColor,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 10.sp,
+              width: double.infinity,
+              child: FutureBuilder<List<Categories?>>(
+                future: StoreService().fetchCategories(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Lỗi: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('Không có danh mục nào'));
+                  }
+
+                  final categories = snapshot.data!;
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 10.sp),
+                        _itemCategory(
+                          title: "Tất cả",
+                          isSelected: _selectedCategory == '',
+                          onSelect: () => _onCategorySelected(''),
+                        ),
+                        ...categories.map((category) {
+                          return _itemCategory(
+                            title: category!.name,
+                            isSelected: _selectedCategory == category.name,
+                            onSelect: () => _onCategorySelected(category.name),
+                          );
+                        }).toList(),
+                        SizedBox(width: 20.sp),
+                      ],
                     ),
-                    const _itemCategory(
-                      title: "Tất cả",
-                      isSelected: true,
-                    ),
-                    const _itemCategory(
-                      title: "Nước ngọt",
-                      isSelected: false,
-                    ),
-                    const _itemCategory(
-                      title: "Trà sữa",
-                      isSelected: false,
-                    ),
-                    const _itemCategory(
-                      title: "Mì Cay",
-                      isSelected: false,
-                    ),
-                    SizedBox(
-                      width: 20.sp,
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
-            Container(
-              height: 6.sp,
-              color: AppColors.whiteColor,
+            Expanded(
+              child: Container(
+                color: AppColors.whiteColor,
+              ),
             ),
           ],
         ),
@@ -119,7 +137,7 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
             ignoreContainers: true,
             justifyMultiLineText: true,
             child: FutureBuilder<List<Product>>(
-              future: StoreService().fetchProducts(),
+              future: StoreService().fetchProductsByCategory(_selectedCategory),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -163,12 +181,12 @@ class _MainProductsScreenState extends State<MainProductsScreen> {
 class _itemCategory extends StatefulWidget {
   final String title;
   final bool isSelected;
-  final VoidCallback? onDelete;
+  final VoidCallback onSelect;
 
   const _itemCategory({
     required this.title,
     required this.isSelected,
-    this.onDelete,
+    required this.onSelect,
   });
 
   @override
@@ -176,53 +194,48 @@ class _itemCategory extends StatefulWidget {
 }
 
 class _itemCategoryState extends State<_itemCategory> {
-  bool _isSelected = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isSelected = widget.isSelected;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isSelected = !_isSelected;
-        });
-      },
-      child: Container(
-        margin: EdgeInsets.only(left: 12.sp),
-        child: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
-              decoration: _isSelected
-                  ? BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(8.sp),
-                      border: Border.all(
-                        color: AppColors.primaryColor,
-                      ),
-                    )
-                  : BoxDecoration(
-                      color: AppColors.backGroundButtonColor,
-                      borderRadius: BorderRadius.circular(8.sp),
-                      border: Border.all(
-                        color: Colors.grey[300]!,
-                      ),
-                    ),
-              child: Text(
+    return Container(
+      margin: EdgeInsets.only(left: 10.sp),
+      child: GestureDetector(
+        onTap: () {
+          widget.onSelect();
+        },
+        child: Container(
+          height: 38.sp,
+          padding: EdgeInsets.symmetric(
+            horizontal: 10.sp,
+          ),
+          decoration: widget.isSelected
+              ? BoxDecoration(
+                  color: AppColors.primaryColor,
+                  borderRadius: BorderRadius.circular(8.sp),
+                  border: Border.all(
+                    color: AppColors.primaryColor,
+                  ),
+                )
+              : BoxDecoration(
+                  color: AppColors.backGroundButtonColor,
+                  borderRadius: BorderRadius.circular(10.sp),
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                  ),
+                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
                 widget.title,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color:
-                      _isSelected ? AppColors.whiteColor : AppColors.textColor,
+                  color: widget.isSelected
+                      ? AppColors.whiteColor
+                      : AppColors.textColor,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

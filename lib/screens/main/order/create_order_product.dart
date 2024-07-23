@@ -19,12 +19,18 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
   bool _expanded = false;
   int? selectedValue;
   List<bool> isCheckedList = List.filled(6, false);
-  ScrollController _scrollController = ScrollController();
   int quantity = 1;
+  int totalPrice = 0;
+  final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    totalPrice = widget.product!.getPrice;
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -378,7 +384,7 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                   Container(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      'Size',
+                                      'Thêm lưu ý',
                                       style: TextStyle(
                                         color: AppColors.textColor,
                                         fontSize: 14.sp,
@@ -395,7 +401,7 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                   Container(
                                     alignment: Alignment.topLeft,
                                     child: Text(
-                                      'chọn 1',
+                                      'Không bắt buộc',
                                       style: TextStyle(
                                         color: AppColors.textColor,
                                         fontSize: 12.sp,
@@ -404,77 +410,22 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
                                   ),
                                 ],
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Transform.scale(
-                                        scale: 0.8.sp,
-                                        child: Radio(
-                                          value: 1,
-                                          groupValue: selectedValue,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedValue = value as int?;
-                                            });
-                                          },
-                                          activeColor: AppColors.primaryColor,
-                                        ),
-                                      ),
-                                      Expanded(
-                                          child: Text(
-                                        'Size nhỏ',
-                                      )),
-                                    ],
-                                  ),
-                                  Container(
-                                    height: 0.8.sp,
-                                    color: Colors.grey[300],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Transform.scale(
-                                        scale: 0.8.sp,
-                                        child: Radio(
-                                          value: 2,
-                                          groupValue: selectedValue,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedValue = value as int?;
-                                            });
-                                          },
-                                          activeColor: AppColors.primaryColor,
-                                        ),
-                                      ),
-                                      Expanded(child: Text('Size vừa')),
-                                      Text('+5.000'),
-                                    ],
-                                  ),
-                                  Container(
-                                    height: 0.8.sp,
-                                    color: Colors.grey[300],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Transform.scale(
-                                        scale: 0.8.sp,
-                                        child: Radio(
-                                          value: 3,
-                                          groupValue: selectedValue,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedValue = value as int?;
-                                            });
-                                          },
-                                          activeColor: AppColors.primaryColor,
-                                        ),
-                                      ),
-                                      Expanded(child: Text('Size lớn')),
-                                      Text('+10.000'),
-                                    ],
-                                  ),
-                                ],
+                              TextField(
+                                onChanged: (value) {
+                                  _noteController.text = value;
+                                },
+                                controller: _noteController,
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "Ví dụ: ít ngọt,...",
+                                  hintStyle: TextStyle(
+                                      color: Colors.grey, fontSize: 14.sp),
+                                  border: InputBorder.none,
+                                ),
+                                maxLines: null,
+                                keyboardType: TextInputType.multiline,
                               ),
                             ],
                           ),
@@ -490,15 +441,18 @@ class _CreateOrderProductState extends State<CreateOrderProduct> {
       ),
       bottomNavigationBar: MyBottomNavigationBar(
         quantity: quantity,
+        totalPrice: totalPrice,
         onIncrease: () {
           setState(() {
             quantity++;
+            totalPrice = widget.product!.getPrice * quantity;
           });
         },
         onDecrease: () {
           if (quantity > 1) {
             setState(() {
               quantity--;
+              totalPrice = widget.product!.getPrice * quantity;
             });
           }
         },
@@ -547,11 +501,13 @@ class MyBottomNavigationBar extends StatelessWidget {
   final int quantity;
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
+  final int totalPrice;
   const MyBottomNavigationBar({
     super.key,
     required this.quantity,
     required this.onIncrease,
     required this.onDecrease,
+    required this.totalPrice,
   });
 
   @override
@@ -659,7 +615,7 @@ class MyBottomNavigationBar extends StatelessWidget {
                 ),
               ),
               child: Text(
-                "Thêm vào giỏ hàng - 16.000đ",
+                "Thêm vào giỏ hàng - ${StoreService().formatCurrency(totalPrice)}",
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: AppColors.whiteColor,

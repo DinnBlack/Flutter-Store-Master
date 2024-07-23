@@ -78,7 +78,9 @@ class ItemListProducts extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         StoreService().formatCurrency(
-                            product.getPromotionalPrice ?? product.getPrice),
+                            product.getPromotionalPrice != 0
+                                ? product.getPromotionalPrice ?? 0
+                                : product.getPrice),
                         style: TextStyle(
                           color: Colors.red[300],
                           fontSize: 14.sp,
@@ -89,18 +91,19 @@ class ItemListProducts extends StatelessWidget {
                     SizedBox(
                       width: 12.sp,
                     ),
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        StoreService().formatCurrency(product.getPrice),
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14.sp,
-                          fontFamily: "QuicksandBold",
-                          decoration: TextDecoration.lineThrough,
+                    if (product.getPromotionalPrice != 0)
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          StoreService().formatCurrency(product.getPrice),
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14.sp,
+                            fontFamily: "QuicksandBold",
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ],

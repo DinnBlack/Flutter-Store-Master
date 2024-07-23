@@ -1,4 +1,5 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:storemaster/screens/login/login_screen.dart';
 import 'package:storemaster/screens/login/start_screen.dart';
+import 'package:storemaster/screens/main/main_screen.dart';
 import 'package:storemaster/screens/splash/splash_screen.dart';
 import 'package:storemaster/utils/const.dart';
 
@@ -33,12 +35,15 @@ void main() async {
     await prefs.setBool('isFirstLaunch', false);
   }
 
-  runApp(MyApp(isFirstLaunch: isFirstLaunch));
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
+  runApp(MyApp(isFirstLaunch: isFirstLaunch, currentUser: currentUser));
 }
 
 class MyApp extends StatelessWidget {
   final bool isFirstLaunch;
-  const MyApp({super.key, required this.isFirstLaunch});
+  final User? currentUser;
+  const MyApp({super.key, required this.isFirstLaunch, this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +68,14 @@ class MyApp extends StatelessWidget {
                 splash: 'assets/lottie/Animation - 1721314856511.json',
                 nextScreen: StartScreen(),
               )
-            : const SplashScreen(
-                splash: 'assets/lottie/Animation - 1721314856511.json',
-                nextScreen: LoginScreen(),
-              ));
+            : currentUser != null
+                ? const SplashScreen(
+                    splash: 'assets/lottie/Animation - 1721314856511.json',
+                    nextScreen: MainScreen(),
+                  )
+                : const SplashScreen(
+                    splash: 'assets/lottie/Animation - 1721314856511.json',
+                    nextScreen: LoginScreen(),
+                  ));
   }
 }
